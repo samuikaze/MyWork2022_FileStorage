@@ -1,0 +1,25 @@
+<div class="container-fluid">
+  <div class="row">
+    <div class="col-12 row">
+      <div class="braedcum col-10 mb-2 h5">
+        <nav aria-label="breadcrumb">
+          <ol class="breadcrumb">
+            <i class="bi bi-flag-fill bc-icon"></i>&nbsp;
+            <li
+              class="breadcrumb-item"
+              [class.active]="isLastBreadcrumb(i)"
+              *ngFor="let breadcrumb of breadcrumbs; let i = index"
+            >
+              <a *ngIf="!isLastBreadcrumb(i)" [routerLink]="breadcrumb.uri">{{ breadcrumb.title }}</a>
+              <span *ngIf="isLastBreadcrumb(i)">{{ breadcrumb.title }}</span>
+            </li>
+          </ol>
+        </nav>
+      </div>
+      <div class="user col-2 mb-2 text-end">
+        <button class="btn btn-info" type="button">登入</button>
+      </div>
+      <hr />
+    </div>
+  </div>
+</div>

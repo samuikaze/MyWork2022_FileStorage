@@ -1,0 +1,21 @@
+<div class="container">
+  <div class="row">
+    <div class="col-12">
+      <div class="mb-3">
+        <label for="formFile" class="form-label">上傳單一檔案</label>
+        <input
+          class="form-control"
+          type="file"
+          id="formFile"
+          (change)="appendFile($event)"
+        />
+      </div>
+      <div class="text-center">
+        {{ progress }}%
+      </div>
+      <div class="text-center">
+        <button type="button" class="btn btn-success" (click)="singleFileUpload()">送出</button>
+      </div>
+    </div>
+  </div>
+</div>

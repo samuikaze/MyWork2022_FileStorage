@@ -1,0 +1,5 @@
+/.git
+/tests
+/vendor
+composer.lock
+phpunit.xml
