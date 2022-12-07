@@ -1,7 +1,7 @@
 {
     "openapi": "3.0.0",
     "info": {
-        "title": "檔案儲存 API",
+        "title": "檔案儲存服務",
         "description": "檔案儲存服務 API 文件",
         "version": "1.0.0"
     },

@@ -8,7 +8,7 @@ use Laravel\Lumen\Routing\Controller as BaseController;
 /**
  * @OA\OpenApi(
  *   @OA\Info(
- *     title="檔案儲存 API",
+ *     title="檔案儲存服務",
  *     version="1.0.0",
  *     description="檔案儲存服務 API 文件"
  *   )
