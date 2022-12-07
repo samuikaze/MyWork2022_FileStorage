@@ -1,4 +1,4 @@
-FROM php:7.4.25-fpm-alpine AS builder
+FROM php:8.1.13-fpm-alpine AS builder
 
 EXPOSE 80
 

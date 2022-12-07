@@ -2,7 +2,6 @@
 
 namespace App\Models;
 
-use App\Commons\IsFinish;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
 
@@ -12,7 +11,7 @@ use Illuminate\Database\Eloquent\Model;
  * @property string $temp 暫存資料夾名稱
  * @property string $folder 資料夾名稱
  * @property string $filename 檔案名稱
- * @property \App\Commons\IsFinish $is_finished 是否已上傳完成
+ * @property \App\Enums\IsFinish $is_finished 是否已上傳完成
  * @property \Carbon\Carbon $created_at 最後建立時間
  * @property \Carbon\Carbon $updated_at 最後更新時間
  */

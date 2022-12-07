@@ -15,14 +15,16 @@ use Laravel\Lumen\Routing\Router;
 |
 */
 
-$router->get('/', function () use ($router) {
-    return $router->app->version();
-});
-
 // v1
 $router->group(['prefix' => 'api/v1'], function (Router $router) {
     // 分塊上傳
     $router->post('/file/chunk', 'FileController@chunkUploadFile');
     // 合併分塊
     $router->post('/file/chunk/merge', 'FileController@mergeChunks');
+    // 取得檔案資訊
+    $router->get('/file/info/{filename}', 'FileController@getFileInformation');
+    // 取得單一檔案
+    $router->get('/file/{filename}', 'FileController@getSingleFile');
+    // 多檔包 Zip 下載
+    $router->post('/files/download', 'FileController@getMultipleFiles');
 });

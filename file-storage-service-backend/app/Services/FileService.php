@@ -2,8 +2,9 @@
 
 namespace App\Services;
 
-use App\Commons\IsFinish;
 use App\Commons\Utils;
+use App\Enums\IsFinish;
+use App\Enums\PathType;
 use App\Exceptions\EntityNotFoundException;
 use App\Exceptions\IOException;
 use App\Repositories\FileRepository;
@@ -12,6 +13,8 @@ use Exception;
 use Illuminate\Http\UploadedFile;
 use Illuminate\Support\Facades\File;
 use Illuminate\Support\Str;
+use Ramsey\Uuid\Uuid;
+use ZipArchive;
 
 class FileService
 {
@@ -30,20 +33,6 @@ class FileService
     protected $file_repository;
 
     /**
-     * 檔案儲存資料夾名稱
-     *
-     * @var string
-     */
-    protected $save_folder;
-
-    /**
-     * 暫存資料夾根目錄
-     *
-     * @var string
-     */
-    protected $temp_folder;
-
-    /**
      * 建構方法
      *
      * @param \App\Repositories\FileRepository $file_repository
@@ -56,8 +45,15 @@ class FileService
     ) {
         $this->file_repository = $file_repository;
         $this->file_upload_repository = $file_upload_repository;
-        $this->save_folder = config('file.save_folder', storage_path('app/files'));
-        $this->temp_folder = config('file.temp_folder', storage_path('app/temps'));
+
+        $check_exists = [
+            config('file.save_folder', storage_path('app'.DIRECTORY_SEPARATOR.'files')),
+            config('file.temp_folder', storage_path('app'.DIRECTORY_SEPARATOR.'temps')),
+            config('file.zip_folder', storage_path('app'.DIRECTORY_SEPARATOR.'zips')),
+        ];
+        foreach ($check_exists as $check) {
+            Utils::checkIfDirectoryExists($check);
+        }
     }
 
     /**
@@ -116,9 +112,7 @@ class FileService
      */
     protected function moveToTempFolder(string $filename, int $count, string $tmp_folder, UploadedFile $chunk): void
     {
-        $temp_directory = $this->temp_folder.
-            DIRECTORY_SEPARATOR.
-            $tmp_folder;
+        $temp_directory = Utils::composePath(type: PathType::TEMP_PATH, folder: $tmp_folder);
 
         $tmp_filename = $filename.'.chunked-'.$count.'.tmp';
         $chunk->move($temp_directory, $tmp_filename);
@@ -144,17 +138,10 @@ class FileService
             throw new EntityNotFoundException('找不到該檔案資料');
         }
 
-        $tmp_files = $this->temp_folder.
-            DIRECTORY_SEPARATOR.
-            $file->temp.
-            DIRECTORY_SEPARATOR.
-            '*.tmp';
+        $save_filename = Uuid::uuid4()->toString().'.'.Utils::getExtensionsFromFilename($filename);
 
-        $final_file = $this->save_folder.
-            DIRECTORY_SEPARATOR.
-            $file->folder.
-            DIRECTORY_SEPARATOR.
-            $file->filename;
+        $tmp_files = Utils::composePath(PathType::TEMP_PATH, $file->temp, '*.tmp');
+        $final_file = Utils::composePath(PathType::SAVE_PATH, $file->folder, $save_filename);
 
         $chunks = glob($tmp_files);
         natsort($chunks);
@@ -162,9 +149,7 @@ class FileService
 
         $counts = count($chunks);
 
-        $gc_path =  $tmp_files = $this->temp_folder.
-            DIRECTORY_SEPARATOR.
-            $file->temp;
+        $gc_path = Utils::composePath(PathType::TEMP_PATH, $file->temp);
 
         for ($i = 0; $i < $counts; $i++) {
             $full_path = $chunks[$i];
@@ -177,7 +162,7 @@ class FileService
                     $buff = $this->readFile($full_path);
                     $this->writeFile($final_file, $buff);
                 } catch (Exception $e) {
-                    $this->GC($gc_path);
+                    Utils::GCSpecificPath($gc_path);
                     throw $e;
                 }
             }
@@ -186,11 +171,12 @@ class FileService
         $this->file_repository->create([
             'user_id' => $file->user_id,
             'folder' => $file->folder,
-            'filename' => $file->filename,
+            'filename' => $save_filename,
+            'original_filename' => Utils::trimFilename($file->filename),
             'is_valid' => 1,
         ]);
 
-        $this->GC($gc_path);
+        Utils::GCSpecificPath($gc_path);
         $this->file_upload_repository->deleteRecord($file->id);
     }
 
@@ -243,40 +229,102 @@ class FileService
     }
 
     /**
-     * 垃圾收集，傳入資料夾會將該資料夾下所有的檔案刪除，傳入完整路徑則只會刪除該檔案
+     * 取得單一檔案完整路徑
      *
-     * @param ?string $directory
-     * @param ?string $full_path
-     * @return bool
+     * @param string $filename 檔案名稱
+     * @return array<string, string>
+     *
+     * @throws \App\Exceptions\EntityNotFoundException
      */
-    protected function GC(string $directory = null, string $full_path = null): bool
+    public function getSingleFile(string $filename): array
     {
-        if (! is_null($directory)) {
-            $paths = $directory.DIRECTORY_SEPARATOR.'*';
-            $files = glob($paths);
-            foreach ($files as $file) {
-                unlink($file);
+        $filename = urldecode($filename);
+        $file = $this->file_repository->getSingleFileByFilename($filename);
+
+        $fullpath = Utils::composePath(PathType::SAVE_PATH, $file->folder, $file->filename);
+        $real_filename = $file->original_filename;
+
+        return [
+            'fullpath' => $fullpath,
+            'real_filename' => $real_filename,
+        ];
+    }
+
+    /**
+     * 多檔包成壓縮檔，並返回完整路徑與檔名
+     *
+     * @param array<int, string> $files 檔案名稱
+     * @return array<string, string>
+     */
+    public function zipMultipleFiles(array $filenames): array
+    {
+        $file_infos = $this->file_repository->getFileByFilenames($filenames);
+        if ($file_infos->count() === 0) {
+            throw new EntityNotFoundException('依據給定的檔名找不到任何檔案');
+        }
+
+        $zip = new ZipArchive();
+        $zip_name = Uuid::uuid4()->toString().'.zip';
+
+        $zip_file = Utils::composePath(type: PathType::ZIP_PATH, filename: $zip_name);
+
+        $result = $zip->open($zip_file, ZipArchive::CREATE);
+        if ($result === false) {
+            throw new IOException('壓縮檔建立失敗，請再試一次');
+        }
+
+        $index = 0;
+        foreach ($file_infos as $info) {
+            $fullpath = Utils::composePath(PathType::SAVE_PATH, $info->folder, $info->filename);
+
+            if (! File::exists($fullpath)) {
+                continue;
             }
 
-            rmdir($directory);
+            $filename = $info->original_filename;
+            if ($zip->locateName($filename, ZipArchive::FL_NODIR) !== false) {
+                $extensions = Utils::getExtensionsFromFilename($filename);
+                $filename =
+                    str_replace('.'.$extensions, '', $filename).
+                    ' ('.$index.').'.
+                    $extensions;
+            }
 
-            return true;
+            $zip->addFile($fullpath, $filename);
+            $index++;
         }
 
-        if (! is_null($full_path)) {
-            unlink($full_path);
+        $zip->close();
 
-            return true;
-        }
+        Utils::GC();
 
-        $temp_paths = $this->temp_folder.
-            DIRECTORY_SEPARATOR.
-            '*';
-        $files = glob($temp_paths);
-        foreach ($files as $file) {
-            unlink($file);
-        }
+        return [
+            'fullpath' => $zip_file,
+            'real_filename' => $zip_name,
+        ];
+    }
 
-        return true;
+    /**
+     * 取得檔案資訊
+     *
+     * @param string $filename 檔案名稱
+     * @return array<string, string>
+     *
+     * @throws \App\Exceptions\EntityNotFoundException
+     */
+    public function getFileInformation(string $filename): array
+    {
+        $filename = urldecode($filename);
+        $file = $this->file_repository->getSingleFileByFilename($filename);
+
+        $fullpath = Utils::composePath(PathType::SAVE_PATH, $file->folder, $file->filename);
+        $size = Utils::calculateFileSize(0, filesize($fullpath));
+
+        return [
+            'filename' => $file->original_filename,
+            'filesize' => $size,
+            'createdAt' => $file->created_at->toISOString(),
+            'updatedAt' => $file->updated_at->toISOString(),
+        ];
     }
 }

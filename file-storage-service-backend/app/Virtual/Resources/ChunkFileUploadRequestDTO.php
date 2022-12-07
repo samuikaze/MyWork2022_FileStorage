@@ -37,7 +37,7 @@ class ChunkFileUploadRequestDTO
      *   description="經切塊後的檔案",
      * )
      */
-    protected $chunk;
+    public $chunk;
 
     /**
      * 是否為最後一塊
@@ -50,7 +50,5 @@ class ChunkFileUploadRequestDTO
      *   example="true"
      * )
      */
-    protected $isLast;
-
-
+    public $isLast;
 }

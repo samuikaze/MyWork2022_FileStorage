@@ -1,8 +1,8 @@
 <?php
 
-namespace App\Commons;
+namespace App\Enums;
 
-abstract class IsFinish
+enum IsFinish: int
 {
     /**
      * 上傳中

@@ -2,9 +2,13 @@
 
 namespace App\Traits;
 
+use App\Http\Controllers\Controller;
+use Carbon\Carbon;
 use Illuminate\Http\JsonResponse;
 use Illuminate\Support\Collection;
+use Illuminate\Support\Facades\File;
 use Illuminate\Support\MessageBag;
+use Symfony\Component\HttpFoundation\StreamedResponse;
 
 trait ResponseFormatter
 {
@@ -38,6 +42,41 @@ trait ResponseFormatter
         ];
 
         return response()->json($response, $status, $headers);
+    }
+
+    /**
+     * 串流回應
+     *
+     * @param string $filepath 檔案完整路徑
+     * @param ?string $real_filename 原始檔案名稱，未指定則以當前時間當作檔案名稱
+     * @return \Symfony\Component\HttpFoundation\StreamedResponse
+     */
+    public function streamResponse(string $filepath, string $real_filename = null)
+    {
+        if (! File::exists($filepath)) {
+            return $this->response('指定的檔案不存在', null, Controller::HTTP_NOT_FOUND);
+        }
+
+        $real_filename = (is_null($real_filename)) ? Carbon::now()->toIso8601String() : $real_filename;
+        $mime_type = File::mimeType($filepath);
+        $stream = fopen($filepath, 'rb+');
+        $headers = [
+            'Content-Type' => $mime_type,
+            'Content-Disposition' => 'attachment;filename="'.$real_filename.'"',
+            'Cache-Control' => 'max-age=0',
+        ];
+
+        return response()->stream(
+            function () use ($stream) {
+                while (! feof($stream)) {
+                    echo fread($stream, 1024);
+                    flush();
+                }
+                fclose($stream);
+            },
+            Controller::HTTP_OK,
+            $headers
+        );
     }
 
     /**

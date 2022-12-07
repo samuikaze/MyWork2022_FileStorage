@@ -5,6 +5,15 @@ namespace App\Http\Controllers;
 use App\Traits\ResponseFormatter;
 use Laravel\Lumen\Routing\Controller as BaseController;
 
+/**
+ * @OA\OpenApi(
+ *   @OA\Info(
+ *     title="檔案儲存 API",
+ *     version="1.0.0",
+ *     description="檔案儲存服務 API 文件"
+ *   )
+ * )
+ */
 class Controller extends BaseController
 {
     use ResponseFormatter;

@@ -1,0 +1,346 @@
+{
+    "openapi": "3.0.0",
+    "info": {
+        "title": "檔案儲存 API",
+        "description": "檔案儲存服務 API 文件",
+        "version": "1.0.0"
+    },
+    "paths": {
+        "/api/v1/file/chunk": {
+            "post": {
+                "tags": [
+                    "FileStorage v1"
+                ],
+                "summary": "分塊上傳檔案",
+                "description": "分塊上傳檔案",
+                "operationId": "88abb866d348fe03d2ab27f4a78fd37d",
+                "requestBody": {
+                    "required": true,
+                    "content": {
+                        "application/json": {
+                            "schema": {
+                                "$ref": "#/components/schemas/ChunkFileUploadRequestDTO"
+                            }
+                        }
+                    }
+                },
+                "responses": {
+                    "200": {
+                        "description": "分塊上傳成功",
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "allOf": [
+                                        {
+                                            "properties": {
+                                                "data": {
+                                                    "type": "object"
+                                                }
+                                            },
+                                            "type": "object"
+                                        },
+                                        {
+                                            "$ref": "#/components/schemas/BaseResponseDTO"
+                                        }
+                                    ]
+                                }
+                            }
+                        }
+                    },
+                    "400": {
+                        "description": "資料格式不正確或上傳檔案過程中發生可預期的錯誤"
+                    },
+                    "500": {
+                        "description": "上傳檔案過程中發生不可預期的錯誤"
+                    }
+                }
+            }
+        },
+        "/api/v1/file/chunk/merge": {
+            "post": {
+                "tags": [
+                    "FileStorage v1"
+                ],
+                "summary": "合併分塊檔案",
+                "description": "合併分塊檔案",
+                "operationId": "18944ec4c63af3933ccf0d79930873f7",
+                "requestBody": {
+                    "required": true,
+                    "content": {
+                        "application/json": {
+                            "schema": {
+                                "$ref": "#/components/schemas/MergeChunksRequestDTO"
+                            }
+                        }
+                    }
+                },
+                "responses": {
+                    "200": {
+                        "description": "分塊合併成功",
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "allOf": [
+                                        {
+                                            "properties": {
+                                                "data": {
+                                                    "type": "object",
+                                                    "example": []
+                                                }
+                                            },
+                                            "type": "object"
+                                        },
+                                        {
+                                            "$ref": "#/components/schemas/BaseResponseDTO"
+                                        }
+                                    ]
+                                }
+                            }
+                        }
+                    },
+                    "400": {
+                        "description": "請求資料有誤或合併過程中發生已預期的錯誤"
+                    },
+                    "500": {
+                        "description": "合併檔案過程中發生不可預期的錯誤"
+                    }
+                }
+            }
+        },
+        "/api/v1/file/info/{filename}": {
+            "get": {
+                "tags": [
+                    "FileStorage v1"
+                ],
+                "summary": "取得檔案資訊",
+                "description": "取得檔案資訊",
+                "operationId": "4d116ae6d6ab86b45b2058245ee953ae",
+                "parameters": [
+                    {
+                        "name": "filename",
+                        "in": "path",
+                        "required": true,
+                        "schema": {
+                            "type": "string",
+                            "example": "test.jpg"
+                        }
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "取得單一檔案",
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "allOf": [
+                                        {
+                                            "properties": {
+                                                "data": {
+                                                    "$ref": "#/components/schemas/FileInformationResponseDTO"
+                                                }
+                                            },
+                                            "type": "object"
+                                        },
+                                        {
+                                            "$ref": "#/components/schemas/BaseResponseDTO"
+                                        }
+                                    ]
+                                }
+                            }
+                        }
+                    },
+                    "404": {
+                        "description": "未給出檔案名稱或找不到檔案"
+                    },
+                    "500": {
+                        "description": "下載檔案過程中發生不可預期的錯誤"
+                    }
+                }
+            }
+        },
+        "/api/v1/file/{filename}": {
+            "get": {
+                "tags": [
+                    "FileStorage v1"
+                ],
+                "summary": "取得單一檔案",
+                "description": "取得單一檔案",
+                "operationId": "5d4e97f14e4f8fb7f5bf70671c7d9124",
+                "parameters": [
+                    {
+                        "name": "filename",
+                        "in": "path",
+                        "required": true,
+                        "schema": {
+                            "type": "string",
+                            "example": "test.jpg"
+                        }
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "取得單一檔案"
+                    },
+                    "404": {
+                        "description": "未給出檔案名稱或找不到檔案"
+                    },
+                    "500": {
+                        "description": "下載檔案過程中發生不可預期的錯誤"
+                    }
+                }
+            }
+        },
+        "/api/v1/files/download": {
+            "post": {
+                "tags": [
+                    "FileStorage v1"
+                ],
+                "summary": "多檔包 Zip 下載",
+                "description": "多檔包 Zip 下載",
+                "operationId": "37acc89d9fc4bf09514de483e83a1287",
+                "requestBody": {
+                    "required": true,
+                    "content": {
+                        "application/json": {
+                            "schema": {
+                                "$ref": "#/components/schemas/MultipleFilesDownloadRequestDTO"
+                            }
+                        }
+                    }
+                },
+                "responses": {
+                    "200": {
+                        "description": "取得單一檔案"
+                    },
+                    "404": {
+                        "description": "未給出檔案名稱或找不到檔案"
+                    },
+                    "500": {
+                        "description": "下載檔案過程中發生不可預期的錯誤"
+                    }
+                }
+            }
+        }
+    },
+    "components": {
+        "schemas": {
+            "BaseResponseDTO": {
+                "title": "共通回應",
+                "description": "請求回傳的共通酬載",
+                "properties": {
+                    "status": {
+                        "description": "HTTP 狀態碼",
+                        "type": "integer",
+                        "example": "200"
+                    },
+                    "message": {
+                        "description": "錯誤訊息",
+                        "type": "string",
+                        "example": "錯誤訊息"
+                    }
+                },
+                "type": "object"
+            },
+            "FileInformationResponseDTO": {
+                "title": "檔案資訊回應酬載",
+                "description": "取得檔案資訊回應酬載",
+                "properties": {
+                    "filename": {
+                        "description": "檔案名稱",
+                        "type": "string",
+                        "example": "example.jpg"
+                    },
+                    "filesize": {
+                        "description": "檔案大小",
+                        "type": "string",
+                        "example": "3.25MB"
+                    },
+                    "createdAt": {
+                        "description": "檔案建立時間",
+                        "type": "date-time",
+                        "example": "2022-12-07T19:16:21.921Z"
+                    },
+                    "updatedAt": {
+                        "description": "檔案最後更新時間",
+                        "type": "date-time",
+                        "example": "2022-12-07T19:16:21.921Z"
+                    }
+                },
+                "type": "object"
+            },
+            "ChunkFileUploadRequestDTO": {
+                "title": "分塊上傳檔案請求",
+                "description": "分塊上傳檔案請求",
+                "required": [
+                    "fileName",
+                    "chunk",
+                    "isLast"
+                ],
+                "properties": {
+                    "fileName": {
+                        "title": "檔案名稱",
+                        "description": "原始檔案名稱",
+                        "type": "string",
+                        "example": "example.zip"
+                    },
+                    "chunk": {
+                        "title": "檔案分塊",
+                        "description": "經切塊後的檔案"
+                    },
+                    "isLast": {
+                        "title": "是否為最後一塊",
+                        "description": "此分塊是否為最後一個分塊",
+                        "type": "boolean",
+                        "example": "true"
+                    }
+                },
+                "type": "object"
+            },
+            "MergeChunksRequestDTO": {
+                "title": "合併分塊檔案請求",
+                "description": "合併分塊檔案請求",
+                "required": [
+                    "fileName"
+                ],
+                "properties": {
+                    "filename": {
+                        "title": "檔案名稱",
+                        "description": "檔案名稱",
+                        "type": "string",
+                        "example": "example.zip"
+                    }
+                },
+                "type": "object"
+            },
+            "MultipleFilesDownloadRequestDTO": {
+                "title": "多檔包 Zip 下載請求",
+                "description": "多檔包 Zip 下載請求",
+                "required": [
+                    "files"
+                ],
+                "properties": {
+                    "files": {
+                        "description": "檔案名稱",
+                        "type": "array",
+                        "items": {
+                            "type": "string",
+                            "example": "test.jpg"
+                        }
+                    },
+                    "filename": {
+                        "description": "希望檔案下載的預設名稱",
+                        "type": "string",
+                        "example": "test.zip"
+                    }
+                },
+                "type": "object"
+            }
+        }
+    },
+    "tags": [
+        {
+            "name": "FileStorage v1",
+            "description": "負責檔案儲存與下載的 API"
+        }
+    ]
+}

@@ -18,6 +18,8 @@ class File extends Migration
             $table->bigInteger('user_id');
             $table->string('folder', 32);
             $table->string('filename', 128);
+            $table->string('original_filename', 128);
+            $table->bigInteger('filesize')->unsigned()->comment('檔案大小，單位為 bytes');
             $table->tinyInteger('is_valid')->default(1);
             $table->dateTime('created_at')->nullable();
             $table->dateTime('updated_at')->nullable();

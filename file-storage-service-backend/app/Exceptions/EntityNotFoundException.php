@@ -2,7 +2,9 @@
 
 namespace App\Exceptions;
 
-class EntityNotFoundException
+use Exception;
+
+class EntityNotFoundException extends Exception
 {
     //
 }
