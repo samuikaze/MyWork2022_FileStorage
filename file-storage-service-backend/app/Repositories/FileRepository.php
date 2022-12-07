@@ -4,7 +4,7 @@ namespace App\Repositories;
 
 use App\Exceptions\EntityNotFoundException;
 use App\Models\File;
-use App\Repositories\Abstracts\BaseRepository;
+use App\Repositories\BaseRepository;
 use Illuminate\Database\Eloquent\Builder;
 use Illuminate\Database\Eloquent\Collection;
 

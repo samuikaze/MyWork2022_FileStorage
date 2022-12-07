@@ -3,7 +3,7 @@
 namespace App\Repositories;
 
 use App\Models\FileUpload;
-use App\Repositories\Abstracts\BaseRepository;
+use App\Repositories\BaseRepository;
 
 class FileUploadRepository extends BaseRepository
 {

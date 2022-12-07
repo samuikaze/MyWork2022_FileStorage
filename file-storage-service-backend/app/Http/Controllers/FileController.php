@@ -274,7 +274,7 @@ class FileController extends Controller
      *   )
      * )
      */
-    public function getSingleFile(string $filename = null)
+    public function getSingleFile(string $filename = null): JsonResponse | StreamedResponse
     {
         $validator = Validator::make(['filename' => $filename], [
             'filename' => ['required', 'string'],
@@ -290,7 +290,7 @@ class FileController extends Controller
                 'real_filename' => $real_filename,
             ] = $this->file_service->getSingleFile($filename);
         } catch (EntityNotFoundException $e) {
-            return $this->response(null, null, self::HTTP_NOT_FOUND);
+            return $this->response(null, $e->getMessage(), self::HTTP_NOT_FOUND);
         }
 
         return $this->streamResponse($fullpath, $real_filename);
@@ -326,7 +326,7 @@ class FileController extends Controller
      *   )
      * )
      */
-    public function getMultipleFiles(Request $request)
+    public function getMultipleFiles(Request $request): JsonResponse | StreamedResponse
     {
         $validator = Validator::make($request->all(), [
             'filename' => ['nullable', 'string'],
