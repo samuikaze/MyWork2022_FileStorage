@@ -43,7 +43,6 @@ class FileController extends Controller
      * 分塊上傳檔案
      *
      * @param \Illuminate\Http\Request $request
-     * @param string $category
      * @return \Illuminate\Http\JsonResponse
      *
      * @OA\Post(
@@ -185,13 +184,23 @@ class FileController extends Controller
     /**
      * 取得檔案資訊
      *
-     * @param string $filename
+     * @param string $folder 資料夾名稱
+     * @param string $filename 檔案名稱
      * @return \Illuminate\Http\JsonResponse
      *
      * @OA\Get(
      *   path="/api/v1/file/info/{filename}",
      *   summary="取得檔案資訊",
      *   tags={"FileStorage v1"},
+     *   @OA\Parameter(
+     *     name="folder",
+     *     in="path",
+     *     required=true,
+     *     @OA\Schema(
+     *       type="string",
+     *       example="testfolder"
+     *     )
+     *   ),
      *   @OA\Parameter(
      *     name="filename",
      *     in="path",
@@ -227,10 +236,10 @@ class FileController extends Controller
      *   )
      * )
      */
-    public function getFileInformation(string $filename): JsonResponse
+    public function getFileInformation(string $folder, string $filename): JsonResponse
     {
         try {
-            $information = $this->file_service->getFileInformation($filename);
+            $information = $this->file_service->getFileInformation($folder, $filename);
         } catch (EntityNotFoundException $e) {
             return $this->response(
                 error: $e->getMessage(),
@@ -244,13 +253,23 @@ class FileController extends Controller
     /**
      * 取得單一檔案
      *
-     * @param \Illuminate\Http\Request $request
+     * @param string $folder 資料夾名稱
+     * @param string $filename 檔案名稱
      * @return \Illuminate\Http\JsonResponse|\Symfony\Component\HttpFoundation\StreamedResponse
      *
      * @OA\Get(
      *   path="/api/v1/file/{filename}",
      *   summary="取得單一檔案",
      *   tags={"FileStorage v1"},
+     *   @OA\Parameter(
+     *     name="folder",
+     *     in="path",
+     *     required=true,
+     *     @OA\Schema(
+     *       type="string",
+     *       example="testfolder"
+     *     )
+     *   ),
      *   @OA\Parameter(
      *     name="filename",
      *     in="path",
@@ -274,7 +293,7 @@ class FileController extends Controller
      *   )
      * )
      */
-    public function getSingleFile(string $filename = null): JsonResponse | StreamedResponse
+    public function getSingleFile(string $folder, string $filename): JsonResponse | StreamedResponse
     {
         $validator = Validator::make(['filename' => $filename], [
             'filename' => ['required', 'string'],
@@ -288,7 +307,7 @@ class FileController extends Controller
             [
                 'fullpath' => $fullpath,
                 'real_filename' => $real_filename,
-            ] = $this->file_service->getSingleFile($filename);
+            ] = $this->file_service->getSingleFile($folder, $filename);
         } catch (EntityNotFoundException $e) {
             return $this->response(null, $e->getMessage(), self::HTTP_NOT_FOUND);
         }

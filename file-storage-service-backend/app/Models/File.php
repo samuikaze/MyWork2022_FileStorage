@@ -10,6 +10,7 @@ use Illuminate\Database\Eloquent\Model;
  * @property int $user_id 上傳者
  * @property string $folder 資料夾名稱
  * @property string $filename 檔案名稱
+ * @property string $display_folder 顯示用資料夾名稱
  * @property string $original_filename 原始檔案名稱
  * @property bool $is_valid 是否有效
  * @property \Carbon\Carbon $created_at 最後建立時間
@@ -35,6 +36,7 @@ class File extends Model
         'user_id',
         'folder',
         'filename',
+        'display_folder',
         'original_filename',
         'is_valid',
     ];

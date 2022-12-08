@@ -117,6 +117,15 @@
                 "operationId": "4d116ae6d6ab86b45b2058245ee953ae",
                 "parameters": [
                     {
+                        "name": "folder",
+                        "in": "path",
+                        "required": true,
+                        "schema": {
+                            "type": "string",
+                            "example": "testfolder"
+                        }
+                    },
+                    {
                         "name": "filename",
                         "in": "path",
                         "required": true,
@@ -167,6 +176,15 @@
                 "description": "取得單一檔案",
                 "operationId": "5d4e97f14e4f8fb7f5bf70671c7d9124",
                 "parameters": [
+                    {
+                        "name": "folder",
+                        "in": "path",
+                        "required": true,
+                        "schema": {
+                            "type": "string",
+                            "example": "testfolder"
+                        }
+                    },
                     {
                         "name": "filename",
                         "in": "path",

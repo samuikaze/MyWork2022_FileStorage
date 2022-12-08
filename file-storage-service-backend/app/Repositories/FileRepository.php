@@ -40,14 +40,16 @@ class FileRepository extends BaseRepository
     /**
      * 依檔案名稱取得檔案儲存資訊
      *
+     * @param string $folder
      * @param string $filename
      * @return \App\Models\File
      *
      * @throws \App\Exceptions\EntityNotFoundException
      */
-    public function getSingleFileByFilename(string $filename): File
+    public function getSingleFileByFilename(string $folder, string $filename): File
     {
         $file = $this->baseGetFile()
+            ->where('files.display_folder', $folder)
             ->where('files.original_filename', $filename)
             ->first();
 

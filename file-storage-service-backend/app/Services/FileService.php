@@ -138,6 +138,7 @@ class FileService
             throw new EntityNotFoundException('找不到該檔案資料');
         }
 
+        $display_folder = Uuid::uuid4()->toString();
         $save_filename = Uuid::uuid4()->toString().'.'.Utils::getExtensionsFromFilename($filename);
 
         $tmp_files = Utils::composePath(PathType::TEMP_PATH, $file->temp, '*.tmp');
@@ -172,6 +173,7 @@ class FileService
             'user_id' => $file->user_id,
             'folder' => $file->folder,
             'filename' => $save_filename,
+            'display_folder' => $display_folder,
             'original_filename' => Utils::trimFilename($file->filename),
             'is_valid' => 1,
         ]);
@@ -231,15 +233,16 @@ class FileService
     /**
      * 取得單一檔案完整路徑
      *
+     * @param string $folder 資料夾名稱
      * @param string $filename 檔案名稱
      * @return array<string, string>
      *
      * @throws \App\Exceptions\EntityNotFoundException
      */
-    public function getSingleFile(string $filename): array
+    public function getSingleFile(string $folder, string $filename): array
     {
         $filename = urldecode($filename);
-        $file = $this->file_repository->getSingleFileByFilename($filename);
+        $file = $this->file_repository->getSingleFileByFilename($folder, $filename);
 
         $fullpath = Utils::composePath(PathType::SAVE_PATH, $file->folder, $file->filename);
         $real_filename = $file->original_filename;
@@ -307,15 +310,16 @@ class FileService
     /**
      * 取得檔案資訊
      *
+     * @param string $folder 資料夾名稱
      * @param string $filename 檔案名稱
      * @return array<string, string>
      *
      * @throws \App\Exceptions\EntityNotFoundException
      */
-    public function getFileInformation(string $filename): array
+    public function getFileInformation(string $folder, string $filename): array
     {
         $filename = urldecode($filename);
-        $file = $this->file_repository->getSingleFileByFilename($filename);
+        $file = $this->file_repository->getSingleFileByFilename($folder, $filename);
 
         $fullpath = Utils::composePath(PathType::SAVE_PATH, $file->folder, $file->filename);
         $size = Utils::calculateFileSize(0, filesize($fullpath));
